@@ -168,6 +168,33 @@ resource "aws_ecs_service" "this" {
             }
           }
 
+          dynamic "timeout" {
+            for_each = try([service.value.timeout], [])
+
+            content {
+              idle_timeout_seconds        = try(timeout.value.idle_timeout_seconds, null)
+              per_request_timeout_seconds = try(timeout.value.per_request_timeout_seconds, null)
+            }
+          }
+
+          dynamic "tls" {
+            for_each = try([service.value.tls], [])
+
+            content {
+
+              dynamic "issuer_cert_authority" {
+                for_each = tls.value.issuer_cert_authority
+
+                content {
+                  aws_pca_authority_arn = issuer_cert_authority.value.aws_pca_authority_arn
+                }
+              }
+
+              kms_key  = try(tls.value.kms_key, null)
+              role_arn = try(tls.value.role_arn, null)
+            }
+          }
+
           discovery_name        = try(service.value.discovery_name, null)
           ingress_port_override = try(service.value.ingress_port_override, null)
           port_name             = service.value.port_name
@@ -378,6 +405,33 @@ resource "aws_ecs_service" "ignore_task_definition" {
             content {
               dns_name = try(client_alias.value.dns_name, null)
               port     = client_alias.value.port
+            }
+          }
+
+          dynamic "timeout" {
+            for_each = try([service.value.timeout], [])
+
+            content {
+              idle_timeout_seconds        = try(timeout.value.idle_timeout_seconds, null)
+              per_request_timeout_seconds = try(timeout.value.per_request_timeout_seconds, null)
+            }
+          }
+
+          dynamic "tls" {
+            for_each = try([service.value.tls], [])
+
+            content {
+
+              dynamic "issuer_cert_authority" {
+                for_each = tls.value.issuer_cert_authority
+
+                content {
+                  aws_pca_authority_arn = issuer_cert_authority.value.aws_pca_authority_arn
+                }
+              }
+
+              kms_key  = try(tls.value.kms_key, null)
+              role_arn = try(tls.value.role_arn, null)
             }
           }
 
