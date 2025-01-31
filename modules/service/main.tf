@@ -841,7 +841,7 @@ resource "aws_ecs_task_definition" "this" {
 
       host_path           = try(volume.value.host_path, null)
       configure_at_launch = try(volume.value.configure_at_launch, null)
-      name                = coalesce(volume.value.name, volume.key)
+      name                = try(volume.value.name, volume.key)
     }
   }
 
