@@ -204,7 +204,11 @@ variable "memoryReservation" {
 
 variable "mountPoints" {
   description = "The mount points for data volumes in your container"
-  type        = list(any)
+  type        = list(object({
+    containerPath = optional(string)
+    readOnly      = optional(bool)
+    sourceVolume  = optional(string)
+  }))
   default     = null
 }
 
