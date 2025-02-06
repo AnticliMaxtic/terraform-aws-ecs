@@ -914,6 +914,7 @@ data "aws_iam_policy_document" "task_exec" {
   statement {
     sid = "Logs"
     actions = [
+      "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
     ]
@@ -930,6 +931,21 @@ data "aws_iam_policy_document" "task_exec" {
       "ecr:BatchGetImage",
     ]
     resources = ["*"]
+  }
+
+  dynamic "statement" {
+    for_each = var.enable_execute_command ? [1] : []
+
+    content {
+      sid = "ECSExec"
+      actions = [
+        "ssmmessages:CreateControlChannel",
+        "ssmmessages:CreateDataChannel",
+        "ssmmessages:OpenControlChannel",
+        "ssmmessages:OpenDataChannel",
+      ]
+      resources = ["*"]
+    }
   }
 
   dynamic "statement" {
@@ -1073,6 +1089,29 @@ resource "aws_iam_role_policy_attachment" "tasks" {
 
 data "aws_iam_policy_document" "tasks" {
   count = local.create_tasks_iam_role && (length(var.tasks_iam_role_statements) > 0 || var.enable_execute_command) ? 1 : 0
+
+  # Pulled from AmazonECSTaskExecutionRolePolicy
+  statement {
+    sid = "Logs"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = ["*"]
+  }
+
+  # Pulled from AmazonECSTaskExecutionRolePolicy
+  statement {
+    sid = "ECR"
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+    ]
+    resources = ["*"]
+  }
 
   dynamic "statement" {
     for_each = var.enable_execute_command ? [1] : []
